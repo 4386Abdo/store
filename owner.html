@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>إدارة مخزون</title>
+    <meta name="description" content="إدارة مخزون" />
+
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#0f172a" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="إدارة مخزون" />
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+    <link rel="icon" type="image/svg+xml" href="icons/icon.svg" />
+
+    <!-- Google Fonts: Alexandria & IBM Plex Sans Arabic -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@600;700&family=IBM+Plex+Sans+Arabic:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- Supabase JS CDN (v2) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <!-- Offline Banner -->
+    <div class="offline-banner">وضع عدم الاتصال — يتم عرض آخر رصيد محفوظ مسبقا</div>
+
+    <!-- Viewer PIN Screen -->
+    <div id="owner-auth-screen" class="auth-wrapper" style="display:none;">
+      <div class="auth-card">
+        <div class="brand-icon" style="width:48px; height:48px; margin:0 auto 16px auto;">
+          <svg class="svg-icon" viewBox="0 0 24 24" style="width:28px; height:28px;"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+        </div>
+        <h2 style="font-size:1.35rem; margin-bottom:8px;">إدارة مخزون</h2>
+        <p style="color:#64748b; font-size:0.9rem; margin-bottom:20px;">
+          أدخل رمز العرض للمتابعة (الافتراضي: 654321)
+        </p>
+
+        <div class="pin-display">
+          <div class="pin-dot viewer-pin-dot"></div>
+          <div class="pin-dot viewer-pin-dot"></div>
+          <div class="pin-dot viewer-pin-dot"></div>
+          <div class="pin-dot viewer-pin-dot"></div>
+          <div class="pin-dot viewer-pin-dot"></div>
+          <div class="pin-dot viewer-pin-dot"></div>
+        </div>
+
+        <div id="viewer-auth-error" style="color:#dc2626; font-size:0.85rem; min-height:1.2rem; margin-bottom:12px; font-weight:500;"></div>
+
+        <div class="keypad-grid">
+          <button type="button" class="keypad-btn viewer-keypad-btn" data-val="1">1</button>
+          <button type="button" class="keypad-btn viewer-keypad-btn" data-val="2">2</button>
+          <button type="button" class="keypad-btn viewer-keypad-btn" data-val="3">3</button>
+          <button type="button" class="keypad-btn viewer-keypad-btn" data-val="4">4</button>
+          <button type="button" class="keypad-btn viewer-keypad-btn" data-val="5">5</button>
+          <button type="button" class="keypad-btn viewer-keypad-btn" data-val="6">6</button>
+          <button type="button" class="keypad-btn viewer-keypad-btn" data-val="7">7</button>
+          <button type="button" class="keypad-btn viewer-keypad-btn" data-val="8">8</button>
+          <button type="button" class="keypad-btn viewer-keypad-btn" data-val="9">9</button>
+          <button type="button" class="keypad-btn viewer-keypad-btn" data-val="clear" style="font-size:0.9rem; color:#dc2626;">مسح</button>
+          <button type="button" class="keypad-btn viewer-keypad-btn" data-val="0">0</button>
+          <button type="button" class="keypad-btn viewer-keypad-btn" data-val="backspace" style="font-size:1.1rem;" aria-label="حذف">⌫</button>
+        </div>
+
+        <div style="margin-top:24px; border-top:1px solid #e2e8f0; padding-top:16px; text-align:center;">
+          <a href="index.html" style="color:#64748b; font-size:0.85rem;">الرئيسية</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Owner Screen -->
+    <div id="owner-main-screen" style="display:none; min-height:100vh; flex-direction:column;">
+      <!-- Header with ONLY "إدارة مخزون" -->
+      <header class="app-header">
+        <div class="container header-content">
+          <div class="brand-wrapper">
+            <a href="index.html" style="display:flex; align-items:center; gap:8px; text-decoration:none;">
+              <div class="brand-icon">
+                <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+              </div>
+              <h1 class="brand-title">إدارة مخزون</h1>
+            </a>
+          </div>
+          <div class="header-actions">
+            <button class="btn btn-secondary btn-sm" id="btn-owner-refresh" aria-label="تحديث" title="تحديث">
+              <svg class="svg-icon" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+              <span>تحديث</span>
+            </button>
+            <a href="editor.html" class="btn btn-primary btn-sm">
+              <span>دخول المسؤول</span>
+            </a>
+          </div>
+        </div>
+      </header>
+
+      <!-- Main Dashboard Container -->
+      <main class="container" style="padding:24px 16px 64px 16px; flex:1;">
+        <!-- Top Metrics Cards (3-4 cards max) -->
+        <div class="grid-stats">
+          <div class="stat-card">
+            <span class="stat-title">إجمالي الأصناف</span>
+            <div class="stat-value" id="owner-total-count">0</div>
+            <span class="stat-subtext">أصناف مسجلة</span>
+          </div>
+
+          <div class="stat-card">
+            <span class="stat-title">قارب على النفاد</span>
+            <div class="stat-value" id="owner-low-count" style="color:var(--status-low-text);">0</div>
+            <span class="stat-subtext">تحت الحد الأدنى</span>
+          </div>
+
+          <div class="stat-card">
+            <span class="stat-title">نفد من المخزون</span>
+            <div class="stat-value" id="owner-out-count" style="color:var(--status-out-text);">0</div>
+            <span class="stat-subtext">الرصيد صفر</span>
+          </div>
+
+          <div class="stat-card">
+            <span class="stat-title">حالة سيئة أو متوسطة</span>
+            <div class="stat-value" id="owner-cond-bad" style="color:var(--cond-poor-text);">0</div>
+            <span class="stat-subtext" id="owner-cond-bad-sub">أصناف تحتاج مراجعة</span>
+          </div>
+
+          <div class="stat-card" id="owner-valuation-card" style="display:none;">
+            <span class="stat-title">إجمالي قيمة المخزون</span>
+            <div class="stat-value" id="owner-valuation-amount" style="font-size:1.4rem;">0 ج.م</div>
+            <span class="stat-subtext">بالتكلفة</span>
+          </div>
+        </div>
+
+        <!-- 1) Highlighted Low-Stock / Out-of-Stock Section (Top of page) -->
+        <section id="urgent-section" class="priority-section" style="display:none;">
+          <div class="priority-header">
+            <div class="priority-title">
+              <svg class="svg-icon" viewBox="0 0 24 24" style="color:var(--status-low-text);"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+              <span>قارب على النفاد</span>
+            </div>
+            <span style="font-size:0.85rem; color:#64748b;">محسوبة من متوسط الاستهلاك الفعلي</span>
+          </div>
+          <div id="urgent-items-container" class="urgent-grid"></div>
+        </section>
+
+        <!-- 2) Items Table (Read-Only) -->
+        <section style="margin-top:24px;">
+          <div class="filter-bar">
+            <div class="filter-inputs">
+              <input type="text" id="owner-search" class="form-control" placeholder="بحث بالاسم أو SKU أو المقاس..." style="min-width:220px; flex:1;">
+              <select id="owner-cat-filter" class="form-control" style="width:auto;">
+                <option value="all">كل التصنيفات</option>
+              </select>
+              <select id="owner-cond-filter" class="form-control" style="width:auto;" aria-label="فلتر حالة المنتج">
+                <option value="all">كل حالات المنتج</option>
+                <option value="good">حالة جيدة</option>
+                <option value="fair">حالة متوسطة</option>
+                <option value="poor">حالة سيئة</option>
+              </select>
+              <select id="owner-status-filter" class="form-control" style="width:auto;">
+                <option value="all">كل الحالات</option>
+                <option value="available">متوفر</option>
+                <option value="low">قارب على النفاد</option>
+                <option value="out">نفد</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="owner-items-table-container"></div>
+        </section>
+
+        <!-- 3) Recent Audit Movements Stream -->
+        <section style="margin-top:32px; background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:20px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid #e2e8f0; padding-bottom:8px;">
+            <h3 style="font-size:1.1rem; font-weight:700;">آخر الحركات المسجلة</h3>
+            <span style="font-size:0.85rem; color:#64748b;" id="last-stocktake-info"></span>
+          </div>
+          <div id="owner-recent-movements"></div>
+        </section>
+      </main>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="js/owner.js"></script>
+  </body>
+</html>

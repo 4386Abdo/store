@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>إدارة مخزون</title>
+    <meta name="description" content="إدارة مخزون" />
+    <meta property="og:title" content="إدارة مخزون" />
+    <meta property="og:description" content="إدارة مخزون" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#0f172a" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="إدارة مخزون" />
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+    <link rel="icon" type="image/svg+xml" href="icons/icon.svg" />
+
+    <!-- Google Fonts: Alexandria & IBM Plex Sans Arabic -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@600;700&family=IBM+Plex+Sans+Arabic:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- Supabase JS CDN (v2) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <!-- Offline Banner -->
+    <div class="offline-banner">وضع عدم الاتصال — يتم عرض النسخة المحفوظة مسبقا</div>
+
+    <!-- Header with ONLY "إدارة مخزون" -->
+    <header class="app-header">
+      <div class="container header-content">
+        <div class="brand-wrapper">
+          <div class="brand-icon">
+            <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+          </div>
+          <h1 class="brand-title">إدارة مخزون</h1>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container" style="padding: 40px 16px; max-width: 960px; margin: 0 auto; flex: 1;">
+      <div style="text-align: center; margin-bottom: 32px;">
+        <h2 style="font-size: 1.75rem; margin-bottom: 8px;">
+          اختر الواجهة للمتابعة
+        </h2>
+        <p style="color: #64748b; font-size: 1.05rem;">
+          نظام متكامل لإدارة المخزون والتوريد والجرد الفعلي وتتبع الاستهلاك.
+        </p>
+      </div>
+
+      <!-- Two Main Portals Cards -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 32px;">
+        <!-- Card 1: Editor Interface -->
+        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: var(--shadow-sm);">
+          <div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+              <span style="font-size:0.85rem; font-weight:600; background:#f1f5f9; padding:4px 10px; border-radius:6px; border:1px solid #e2e8f0;">صلاحيات كاملة</span>
+              <svg class="svg-icon" viewBox="0 0 24 24" style="color:#0f172a;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+            </div>
+            <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 8px;">
+              واجهة المسؤول
+            </h3>
+            <p style="color: #475569; font-size: 0.95rem; line-height: 1.7; margin-bottom: 20px;">
+              إضافة وتعديل الأصناف، تسجيل حركات الصرف والتوريد، اعتماد الجرد الفعلي، وإدارة الإعدادات.
+            </p>
+            <div style="background: #f8fafc; border-radius: 6px; padding: 12px; margin-bottom: 24px; font-size: 0.9rem; color: #475569; border:1px solid #e2e8f0;">
+              رمز PIN الافتراضي: <strong class="tabular-nums" style="color:#0f172a;">123456</strong>
+            </div>
+          </div>
+          <a href="editor.html" class="btn btn-primary" style="width: 100%;">
+            <span>فتح واجهة المسؤول</span>
+            <svg class="svg-icon svg-icon-directional" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+          </a>
+        </div>
+
+        <!-- Card 2: Owner Interface -->
+        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: var(--shadow-sm);">
+          <div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+              <span style="font-size:0.85rem; font-weight:600; background:#f1f5f9; padding:4px 10px; border-radius:6px; border:1px solid #e2e8f0;">عرض فقط</span>
+              <svg class="svg-icon" viewBox="0 0 24 24" style="color:#0f172a;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            </div>
+            <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 8px;">
+              واجهة العرض
+            </h3>
+            <p style="color: #475569; font-size: 0.95rem; line-height: 1.7; margin-bottom: 20px;">
+              متابعة كميات المخزون، الأصناف التي قاربت على النفاد، والأيام المتوقعة قبل النفاد بتحديث لحظي.
+            </p>
+            <div style="background: #f8fafc; border-radius: 6px; padding: 12px; margin-bottom: 24px; font-size: 0.9rem; color: #475569; border:1px solid #e2e8f0;">
+              واجهة للقراءة فقط محمية بدون أزرار تعديل
+            </div>
+          </div>
+          <a href="owner.html" class="btn btn-secondary" style="width: 100%;">
+            <span>فتح واجهة العرض</span>
+            <svg class="svg-icon svg-icon-directional" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Install as app -->
+      <div id="install-card" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; box-shadow: var(--shadow-sm); margin-bottom: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <h4 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 4px;">تثبيت كتطبيق على الموبايل</h4>
+            <p id="install-hint" style="font-size: 0.9rem; color: #64748b;">
+              افتح الموقع من متصفح الموبايل ثم اختر «إضافة إلى الشاشة الرئيسية» ليعمل كتطبيق كامل حتى بدون إنترنت.
+            </p>
+          </div>
+          <button class="btn btn-primary btn-sm" id="btn-install-app" style="display:none;">تثبيت التطبيق</button>
+        </div>
+      </div>
+
+      <!-- Quick Setup Guide Accordion -->
+      <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; box-shadow: var(--shadow-sm);">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <h4 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 4px;">
+              دليل الربط مع Supabase
+            </h4>
+            <p style="font-size: 0.9rem; color: #64748b;">
+              النظام يعمل مباشرة وتُحفظ بياناته على جهازك، ويمكن ربطه بقاعدة بيانات Supabase لتظهر بياناتك على كل أجهزتك.
+            </p>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-secondary btn-sm" id="btn-view-sql">عرض كود SQL</button>
+            <button class="btn btn-primary btn-sm" id="btn-view-guide">خطوات الربط</button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Guide Modal -->
+    <div id="guide-modal" class="modal-overlay">
+      <div class="modal-container" style="max-width: 650px;">
+        <div class="modal-header">
+          <h3 class="modal-title">دليل ربط Supabase واختبار الأمان</h3>
+          <button class="modal-close" data-close-modal="guide-modal" aria-label="إغلاق">&times;</button>
+        </div>
+        <div class="modal-body" style="font-size: 0.95rem; line-height: 1.7; color: #0f172a;">
+          <h4 style="font-weight:700; margin-bottom:4px;">1. إنشاء المشروع</h4>
+          <p style="color:#475569; margin-bottom:12px;">أنشئ مشروعا جديدا على supabase.com.</p>
+
+          <h4 style="font-weight:700; margin-bottom:4px;">2. تشغيل كود SQL</h4>
+          <p style="color:#475569; margin-bottom:12px;">افتح SQL Editor في Supabase والصق محتوى ملف <code>sql/schema.sql</code> واضغط Run (الملف يتضمن أعمدة حالة المنتج جيد/متوسط/سيئ).</p>
+
+          <h4 style="font-weight:700; margin-bottom:4px;">3. إنشاء حساب المسؤول</h4>
+          <p style="color:#475569; margin-bottom:12px;">من Authentication -> Users أنشئ المستخدم <code>editor@studio-inventory.local</code> مع كلمة مرور 6 أرقام (PIN).</p>
+
+          <h4 style="font-weight:700; margin-bottom:4px;">4. إدخال المفاتيح</h4>
+          <p style="color:#475569; margin-bottom:16px;">انسخ Project URL و anon key وضعهما في صفحة الإعدادات.</p>
+
+          <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
+            <strong style="color:#0f172a;">اختبار الأمان:</strong>
+            <p style="font-size: 0.85rem; color: #475569; margin-top:4px;">
+              في صفحة <code>owner.html</code> افتح Console واكتب أمر التعديل:
+              <br><code>await supabase.from('items').update({ quantity: 999 }).eq('sku', 'PRN-1015');</code>
+              <br>سترفض قاعدة البيانات العملية فورا برسالة خطأ في RLS لأن التعديل مقصور على دور المسؤول.
+            </p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-primary" data-close-modal="guide-modal">إغلاق</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SQL Viewer Modal -->
+    <div id="sql-modal" class="modal-overlay">
+      <div class="modal-container" style="max-width: 720px;">
+        <div class="modal-header">
+          <h3 class="modal-title">ملف كود SQL (sql/schema.sql)</h3>
+          <button class="modal-close" data-close-modal="sql-modal" aria-label="إغلاق">&times;</button>
+        </div>
+        <div class="modal-body">
+          <textarea id="sql-content-box" class="form-control" rows="12" style="direction:ltr; text-align:left; font-family:monospace; font-size:0.85rem;" readonly></textarea>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-primary" id="btn-copy-sql">نسخ الكود</button>
+          <button class="btn btn-secondary" data-close-modal="sql-modal">إغلاق</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module">
+      import { initPWA, openModal, closeModal, showToast } from "./js/ui.js";
+      initPWA();
+
+      // زر تثبيت التطبيق (أندرويد / كروم)
+      let deferredInstall = null;
+      const installBtn = document.getElementById('btn-install-app');
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredInstall = e;
+        installBtn.style.display = 'inline-flex';
+      });
+      installBtn.onclick = async () => {
+        if (!deferredInstall) return;
+        deferredInstall.prompt();
+        await deferredInstall.userChoice;
+        deferredInstall = null;
+        installBtn.style.display = 'none';
+      };
+      window.addEventListener('appinstalled', () => { document.getElementById('install-card').style.display = 'none'; });
+      if (window.matchMedia('(display-mode: standalone)').matches || navigator.standalone) {
+        document.getElementById('install-card').style.display = 'none';
+      }
+
+      document.getElementById('btn-view-guide').onclick = () => openModal('guide-modal');
+      
+      const sqlModal = document.getElementById('btn-view-sql');
+      if (sqlModal) {
+        sqlModal.onclick = async () => {
+          try {
+            const resp = await fetch("sql/schema.sql");
+            const text = await resp.text();
+            document.getElementById('sql-content-box').value = text;
+            openModal('sql-modal');
+          } catch(e) {
+            showToast('تعذر تحميل ملف SQL', 'error');
+          }
+        };
+      }
+
+      document.getElementById('btn-copy-sql').onclick = () => {
+        const sqlText = document.getElementById('sql-content-box').value;
+        navigator.clipboard.writeText(sqlText).then(() => {
+          showToast('تم نسخ كود SQL', 'success');
+        });
+      };
+    </script>
+  </body>
+</html>

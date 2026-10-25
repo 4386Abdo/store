@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>إدارة مخزون</title>
+    <meta name="description" content="إدارة مخزون" />
+
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#0f172a" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="إدارة مخزون" />
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+    <link rel="icon" type="image/svg+xml" href="icons/icon.svg" />
+
+    <!-- Google Fonts: Alexandria & IBM Plex Sans Arabic -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@600;700&family=IBM+Plex+Sans+Arabic:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- Supabase JS CDN (v2) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <!-- Offline Banner -->
+    <div class="offline-banner">وضع عدم الاتصال — التعديلات تتطلب اتصالا بالإنترنت</div>
+
+    <!-- 1) Auth Screen (PIN Keypad) -->
+    <div id="auth-screen" class="auth-wrapper" style="display:flex;">
+      <div class="auth-card">
+        <div class="brand-icon" style="width:48px; height:48px; margin:0 auto 16px auto;">
+          <svg class="svg-icon" viewBox="0 0 24 24" style="width:28px; height:28px;"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+        </div>
+        <h2 style="font-size:1.35rem; margin-bottom:8px;">إدارة مخزون</h2>
+        <p style="color:#64748b; font-size:0.9rem; margin-bottom:20px;">
+          أدخل رمز PIN للمتابعة (الافتراضي: 123456)
+        </p>
+
+        <!-- PIN Dots Display -->
+        <div class="pin-display">
+          <div class="pin-dot"></div>
+          <div class="pin-dot"></div>
+          <div class="pin-dot"></div>
+          <div class="pin-dot"></div>
+          <div class="pin-dot"></div>
+          <div class="pin-dot"></div>
+        </div>
+
+        <div id="auth-error-msg" style="color:#dc2626; font-size:0.85rem; min-height:1.2rem; margin-bottom:12px; font-weight:500;"></div>
+
+        <!-- Lockout Warning Box -->
+        <div id="lockout-countdown-box" style="display:none; background:#fef2f2; border:1px solid #fecaca; border-radius:8px; padding:12px; margin-bottom:16px; font-size:0.85rem; color:#991b1b;">
+          النظام مقفل مؤقتا لكثرة المحاولات. انتظر <strong id="lockout-seconds" class="tabular-nums">300</strong> ثانية.
+        </div>
+
+        <!-- On-Screen Keypad -->
+        <div class="keypad-grid">
+          <button type="button" class="keypad-btn" data-val="1">1</button>
+          <button type="button" class="keypad-btn" data-val="2">2</button>
+          <button type="button" class="keypad-btn" data-val="3">3</button>
+          <button type="button" class="keypad-btn" data-val="4">4</button>
+          <button type="button" class="keypad-btn" data-val="5">5</button>
+          <button type="button" class="keypad-btn" data-val="6">6</button>
+          <button type="button" class="keypad-btn" data-val="7">7</button>
+          <button type="button" class="keypad-btn" data-val="8">8</button>
+          <button type="button" class="keypad-btn" data-val="9">9</button>
+          <button type="button" class="keypad-btn" data-val="clear" style="font-size:0.9rem; color:#dc2626;">مسح</button>
+          <button type="button" class="keypad-btn" data-val="0">0</button>
+          <button type="button" class="keypad-btn" data-val="backspace" style="font-size:1.1rem;" aria-label="حذف">⌫</button>
+        </div>
+
+        <div style="margin-top:24px; border-top:1px solid #e2e8f0; padding-top:16px; display:flex; justify-content:space-between; font-size:0.85rem;">
+          <a href="index.html" style="color:#64748b;">الرئيسية</a>
+          <a href="owner.html" style="color:#0f172a; font-weight:500;">واجهة العرض</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2) Main Application Screen -->
+    <div id="app-main" style="display:none; min-height:100vh; flex-direction:column;">
+      <!-- Header with ONLY "إدارة مخزون" -->
+      <header class="app-header">
+        <div class="container header-content">
+          <div class="brand-wrapper">
+            <a href="index.html" style="display:flex; align-items:center; gap:8px; text-decoration:none;">
+              <div class="brand-icon">
+                <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+              </div>
+              <h1 class="brand-title">إدارة مخزون</h1>
+            </a>
+          </div>
+          <div class="header-actions">
+            <button class="btn btn-secondary btn-sm" id="btn-scan-barcode" aria-label="مسح الباركود" title="مسح الباركود">
+              <svg class="svg-icon" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+              <span>مسح باركود</span>
+            </button>
+            <button class="btn btn-primary btn-sm action-add-item">
+              <svg class="svg-icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              <span>إضافة صنف</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Clean 4-tab Navigation -->
+      <div class="container" style="padding-top:8px;">
+        <nav class="nav-tabs" aria-label="أقسام النظام">
+          <button class="nav-tab-btn active" data-tab="items">
+            <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+            <span>الأصناف</span>
+          </button>
+          <button class="nav-tab-btn" data-tab="stocktake">
+            <svg class="svg-icon" viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+            <span>الجرد</span>
+          </button>
+          <button class="nav-tab-btn" data-tab="movements">
+            <svg class="svg-icon" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+            <span>الحركات</span>
+          </button>
+          <button class="nav-tab-btn" data-tab="settings">
+            <svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            <span>الإعدادات</span>
+          </button>
+        </nav>
+      </div>
+
+      <!-- Main Contents -->
+      <main class="container" style="padding:24px 16px 64px 16px; flex:1;">
+        <!-- Undo Banner -->
+        <div id="dashboard-undo-container"></div>
+
+        <!-- Metric Cards (3 cards max for calm clarity) -->
+        <div class="grid-stats">
+          <div class="stat-card">
+            <span class="stat-title">إجمالي الأصناف</span>
+            <div class="stat-value" id="stat-total-items">0</div>
+            <span class="stat-subtext">أصناف مسجلة</span>
+          </div>
+
+          <div class="stat-card">
+            <span class="stat-title">قارب على النفاد</span>
+            <div class="stat-value" id="stat-low-stock" style="color:var(--status-low-text);">0</div>
+            <span class="stat-subtext">تحت الحد الأدنى</span>
+          </div>
+
+          <div class="stat-card">
+            <span class="stat-title">نفد من المخزون</span>
+            <div class="stat-value" id="stat-out-stock" style="color:var(--status-out-text);">0</div>
+            <span class="stat-subtext">الرصيد صفر</span>
+          </div>
+
+          <div class="stat-card">
+            <span class="stat-title">حالة سيئة أو متوسطة</span>
+            <div class="stat-value" id="stat-cond-bad" style="color:var(--cond-poor-text);">0</div>
+            <span class="stat-subtext" id="stat-cond-bad-sub">أصناف تحتاج مراجعة</span>
+          </div>
+
+          <div class="stat-card">
+            <span class="stat-title">قيمة المخزون بالكامل</span>
+            <div class="stat-value" id="stat-valuation" style="font-size:1.4rem;">0 ج.م</div>
+            <span class="stat-subtext">سعر التكلفة الإجمالي</span>
+          </div>
+        </div>
+
+        <!-- TAB 1: الأصناف (Items) -->
+        <section id="tab-items" class="tab-content" style="display:block;">
+          <div class="filter-bar">
+            <div class="filter-inputs">
+              <input type="text" id="inv-search" class="form-control" placeholder="بحث بالاسم أو SKU أو المقاس..." style="min-width:220px; flex:1;">
+              <select id="inv-filter-cat" class="form-control" style="width:auto;">
+                <option value="all">كل التصنيفات</option>
+              </select>
+              <select id="inv-filter-cond" class="form-control" style="width:auto;" aria-label="فلتر حالة المنتج">
+                <option value="all">كل حالات المنتج</option>
+                <option value="good">حالة جيدة</option>
+                <option value="fair">حالة متوسطة</option>
+                <option value="poor">حالة سيئة</option>
+              </select>
+              <select id="inv-filter-status" class="form-control" style="width:auto;">
+                <option value="all">الأصناف النشطة</option>
+                <option value="available">متوفر</option>
+                <option value="low">قارب على النفاد</option>
+                <option value="out">نفد</option>
+                <option value="archived">الأصناف المؤرشفة</option>
+              </select>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+              <button class="btn btn-secondary btn-sm" id="btn-open-jobs-modal">قوالب الشغل</button>
+              <button class="btn btn-secondary btn-sm" id="btn-open-shortages-modal">قائمة النواقص</button>
+              <button class="btn btn-secondary btn-sm" id="btn-export-items-csv" title="تصدير الأصناف بصيغة CSV تفتح في Excel">تصدير CSV</button>
+              <span id="inv-count-badge" style="font-size:0.85rem; color:#64748b; font-weight:500;">0 صنف</span>
+            </div>
+          </div>
+
+          <div id="inventory-table-container"></div>
+        </section>
+
+        <!-- TAB 2: الجرد (Stocktake) -->
+        <section id="tab-stocktake" class="tab-content" style="display:none;">
+          <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:16px; margin-bottom:16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+              <div>
+                <h3 style="font-size:1.15rem; font-weight:700; margin-bottom:4px;">الجرد الفعلي للمخزون</h3>
+                <p style="font-size:0.9rem; color:#64748b;">
+                  أدخل الكميات الفعلية المعدودة لمطابقة الرصيد الدفتري واعتماد الفروق دفعة واحدة.
+                </p>
+              </div>
+              <div style="display:flex; gap:8px; align-items:center;">
+                <select id="stocktake-cat-filter" class="form-control" style="width:auto;">
+                  <option value="all">كل الأصناف</option>
+                </select>
+                <button class="btn btn-primary" id="btn-apply-stocktake">
+                  <svg class="svg-icon" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  <span>اعتماد الجرد</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div id="stocktake-content"></div>
+        </section>
+
+        <!-- TAB 3: الحركات (Movements) -->
+        <section id="tab-movements" class="tab-content" style="display:none;">
+          <div class="filter-bar">
+            <h3 style="font-size:1.1rem; font-weight:700;">سجل الحركات</h3>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <select id="mov-type-filter" class="form-control" style="width:auto;">
+                <option value="all">كل الحركات</option>
+                <option value="supply">توريد</option>
+                <option value="consume">صرف</option>
+                <option value="damage">تالف</option>
+                <option value="stocktake">تسوية جرد</option>
+                <option value="correction">تصحيح</option>
+                <option value="job_template">استهلاك شغل</option>
+              </select>
+            </div>
+          </div>
+          <div id="movements-table-container"></div>
+        </section>
+
+        <!-- TAB 4: الإعدادات (Settings) - بدون حقول اسم الاستوديو والشعار -->
+        <section id="tab-settings" class="tab-content" style="display:none;">
+          <div style="max-width:640px; margin:0 auto; background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:24px;">
+            <h3 style="font-size:1.2rem; font-weight:700; margin-bottom:20px; border-bottom:1px solid #e2e8f0; padding-bottom:12px;">
+              إعدادات النظام
+            </h3>
+
+            <form id="settings-form" onsubmit="return false;">
+              <div class="form-group">
+                <label class="form-label" for="setting-min-threshold">الحد الأدنى الافتراضي للتنبيه:</label>
+                <input type="number" id="setting-min-threshold" class="form-control tabular-nums" min="1" value="5">
+              </div>
+
+              <div style="background:#f8fafc; padding:16px; border-radius:8px; border:1px solid #e2e8f0; margin:20px 0;">
+                <label style="display:flex; align-items:center; gap:12px; cursor:pointer;">
+                  <input type="checkbox" id="setting-hide-cost" style="width:20px; height:20px; accent-color:#0f172a;">
+                  <div>
+                    <strong style="color:#0f172a; font-size:0.95rem;">إخفاء أسعار التكلفة وقيمة المخزون عن واجهة العرض</strong>
+                    <div style="font-size:0.8rem; color:#64748b; margin-top:2px;">
+                      لن تظهر أسعار الشراء أو التقييم المالي في واجهة صاحب الاستوديو.
+                    </div>
+                  </div>
+                </label>
+              </div>
+
+              <div style="background:#f8fafc; padding:16px; border-radius:8px; border:1px solid #e2e8f0; margin:20px 0;">
+                <label style="display:flex; align-items:center; gap:12px; cursor:pointer;">
+                  <input type="checkbox" id="setting-require-viewer-pin" style="width:20px; height:20px; accent-color:#0f172a;">
+                  <div>
+                    <strong style="color:#0f172a; font-size:0.95rem;">طلب رمز PIN للدخول إلى واجهة العرض</strong>
+                    <div style="font-size:0.8rem; color:#64748b; margin-top:2px;">الرمز الافتراضي لواجهة العرض: 654321 (يمكن تغييره بالأسفل).</div>
+                  </div>
+                </label>
+                <div style="display:flex; gap:8px; margin-top:12px; align-items:center;">
+                  <input type="password" id="new-viewer-pin-input" class="form-control tabular-nums" inputmode="numeric" placeholder="رمز عرض جديد (6 إلى 8 أرقام)" autocomplete="off">
+                  <button type="button" class="btn btn-secondary btn-sm" id="btn-change-viewer-pin">تغيير</button>
+                </div>
+              </div>
+
+              <div style="border-top:1px solid #e2e8f0; padding-top:16px; margin-top:16px;">
+                <h4 style="font-size:1rem; font-weight:700; margin-bottom:4px;">بيانات الربط مع Supabase (اختياري):</h4>
+                <p style="font-size:0.8rem; color:#64748b; margin-bottom:12px;">بدون ربط: البيانات تُحفظ على هذا الجهاز فقط. مع الربط: تُحفظ في السحابة وتظهر على كل أجهزتك بنفس الرمز.</p>
+                <div class="form-group">
+                  <label class="form-label" for="setting-supabase-url">Supabase Project URL:</label>
+                  <input type="text" id="setting-supabase-url" class="form-control tabular-nums" placeholder="https://xxxxxxxx.supabase.co" style="direction:ltr; text-align:left;">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="setting-supabase-key">Supabase Anon Key:</label>
+                  <input type="text" id="setting-supabase-key" class="form-control tabular-nums" placeholder="eyJh..." style="direction:ltr; text-align:left;">
+                </div>
+              </div>
+
+              <div class="form-sticky-bar">
+                <button class="btn btn-primary" id="btn-save-settings">حفظ الإعدادات</button>
+              </div>
+            </form>
+
+            <!-- Change PIN -->
+            <div style="margin-top:32px; border-top:1px solid #e2e8f0; padding-top:24px;">
+              <h4 style="font-size:1.05rem; font-weight:700; margin-bottom:12px;">تغيير رمز المسؤول (PIN)</h4>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="current-pin-input">الرمز الحالي:</label>
+                  <input type="password" id="current-pin-input" class="form-control tabular-nums" placeholder="الرمز الحالي">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="new-pin-input">الرمز الجديد (6 أرقام):</label>
+                  <input type="password" id="new-pin-input" class="form-control tabular-nums" placeholder="الرمز الجديد">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="confirm-new-pin-input">تأكيد الرمز:</label>
+                  <input type="password" id="confirm-new-pin-input" class="form-control tabular-nums" placeholder="تأكيد الرمز">
+                </div>
+              </div>
+              <button class="btn btn-secondary" id="btn-change-pin">تحديث الرمز</button>
+            </div>
+
+            <!-- Backup and Restore -->
+            <div style="margin-top:32px; border-top:1px solid #e2e8f0; padding-top:24px;">
+              <h4 style="font-size:1.05rem; font-weight:700; margin-bottom:12px;">النسخ الاحتياطي</h4>
+              <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                <button class="btn btn-secondary btn-sm" id="btn-export-json-backup">تصدير ملف JSON</button>
+                <label class="btn btn-secondary btn-sm" style="cursor:pointer;">
+                  استعادة من ملف
+                  <input type="file" id="import-json-file" accept=".json" style="display:none;">
+                </label>
+              </div>
+            </div>
+
+            <!-- Logout -->
+            <div style="margin-top:32px; border-top:1px solid #e2e8f0; padding-top:20px; text-align:center;">
+              <button class="btn btn-danger btn-sm" id="btn-logout">تسجيل الخروج</button>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <!-- Floating Action Button on Mobile -->
+      <button class="fab-add action-add-item" aria-label="إضافة صنف">
+        <svg class="svg-icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        <span>إضافة صنف</span>
+      </button>
+    </div>
+
+    <!-- Modals for Jobs and Shortages -->
+    <div id="jobs-modal" class="modal-overlay">
+      <div class="modal-container">
+        <div class="modal-header">
+          <h3 class="modal-title">قوالب الشغل واستهلاك الخامات</h3>
+          <button class="modal-close" data-close-modal="jobs-modal" aria-label="إغلاق">&times;</button>
+        </div>
+        <div class="modal-body" id="jobs-modal-list"></div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-close-modal="jobs-modal">إغلاق</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="shortages-modal" class="modal-overlay">
+      <div class="modal-container" style="max-width:700px;">
+        <div class="modal-header">
+          <h3 class="modal-title">قائمة النواقص وإعادة الطلب</h3>
+          <button class="modal-close" data-close-modal="shortages-modal" aria-label="إغلاق">&times;</button>
+        </div>
+        <div class="modal-body" id="shortages-modal-list"></div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-close-modal="shortages-modal">إغلاق</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="js/editor.js"></script>
+  </body>
+</html>
